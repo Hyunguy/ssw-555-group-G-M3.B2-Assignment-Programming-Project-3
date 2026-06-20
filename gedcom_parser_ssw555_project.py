@@ -224,6 +224,8 @@ def run_user_stories(individuals, families):
         # US04: Marriage before divorce (mb)
         if f['married'] and f['divorced'] and f['divorced'] < f['married']:
             errors.append(f"ERROR: FAMILY: US04: {fid}: Divorced {fmt_date(f['divorced'])} before married {fmt_date(f['married'])}")
+        if f['divorced'] and not f['married']:
+            errors.append(f"ERROR: FAMILY: US04: {fid}: Divorced {fmt_date(f['divorced'])} with no marriage date")
 
         # US05: Marriage before death of spouses (mb)
         hid = f['husband_id']
