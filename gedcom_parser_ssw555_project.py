@@ -1,5 +1,6 @@
 import sys
 from datetime import datetime, date
+from dateutil.relativedelta import relativedelta
 from prettytable import PrettyTable
 
 MONTH_MAP = {
@@ -246,17 +247,20 @@ def run_user_stories(individuals, families):
             if wd and f['married'] > wd:
                 errors.append(f"ERROR: FAMILY: US05: {fid}: Married {fmt_date(f['married'])} after wife ({wid}) death on {fmt_date(wd)}")
 
-        
-
-
-
         # US08: Birth before marriage of parents (jt)
+        # US09: Birth before death of parents (mb/jt)
         if f['married']:
             for cid in f['children']:
                 if cid in individuals:
                     cb = individuals[cid]['birthday']
                     if cb and cb < f['married']:
                         errors.append(f"ANOMALY: FAMILY: US08: {fid}: Child {cid} born {fmt_date(cb)} before marriage on {fmt_date(f['married'])}")
+                    hd = individuals[hid]['death']
+                    if hd and cb > hd + relativedelta(months=9):
+                        errors.append(f"ANOMALY: FAMILY: US09: {fid}: Child {cid} born {fmt_date(cb)} after 9 months post death of father on {fmt_date(hd)}")
+                    wd = individuals[wid]['death']
+                    if wd and cb > wd:
+                        errors.append(f"ANOMALY: FAMILY: US09: {fid}: Child {cid} born {fmt_date(cb)} after death of mother on {fmt_date(wd)}")
 
     for e in errors:
         print(e)
