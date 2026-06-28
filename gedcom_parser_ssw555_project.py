@@ -228,16 +228,27 @@ def run_user_stories(individuals, families):
             errors.append(f"ERROR: FAMILY: US04: {fid}: Divorced {fmt_date(f['divorced'])} with no marriage date")
 
         # US05: Marriage before death of spouses (mb)
+        # US10: Marriage after 14 (mb)
         hid = f['husband_id']
         wid = f['wife_id']
         if hid in individuals and f['married']:
+            hb = individuals[hid]['birthday']
             hd = individuals[hid]['death']
+            if hb and calculate_age(hb, f['married']) < 14:
+                errors.append(f"ERROR: FAMILY: US10: {fid}: Married {fmt_date(f['married'])} before husband ({hid}) at least 14 years old {fmt_date(hb)}")
             if hd and f['married'] > hd:
                 errors.append(f"ERROR: FAMILY: US05: {fid}: Married {fmt_date(f['married'])} after husband ({hid}) death on {fmt_date(hd)}")
         if wid in individuals and f['married']:
+            wb = individuals[wid]['birthday']
             wd = individuals[wid]['death']
+            if wb and calculate_age(wb, f['married']) < 14:
+                errors.append(f"ERROR: FAMILY: US10: {fid}: Married {fmt_date(f['married'])} before wife ({wid}) at least 14 years old {fmt_date(wb)}")
             if wd and f['married'] > wd:
                 errors.append(f"ERROR: FAMILY: US05: {fid}: Married {fmt_date(f['married'])} after wife ({wid}) death on {fmt_date(wd)}")
+
+        
+
+
 
         # US08: Birth before marriage of parents (jt)
         if f['married']:
