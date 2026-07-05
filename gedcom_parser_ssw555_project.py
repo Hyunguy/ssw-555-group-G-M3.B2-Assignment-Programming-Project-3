@@ -255,13 +255,13 @@ def run_user_stories(individuals, families):
                 if cid in individuals:
                     cb = individuals[cid]['birthday']
                     if cb and cb < f['married']:
-                        errors.append(f"ANOMALY: FAMILY: US08: {fid}: Child {cid} born {fmt_date(cb)} before marriage on {fmt_date(f['married'])}")
+                        errors.append(f"ERROR: FAMILY: US08: {fid}: Child {cid} born {fmt_date(cb)} before marriage on {fmt_date(f['married'])}")
                     hd = individuals[hid]['death']
                     if hd and cb > hd + relativedelta(months=9):
-                        errors.append(f"ANOMALY: FAMILY: US09: {fid}: Child {cid} born {fmt_date(cb)} after 9 months post death of father on {fmt_date(hd)}")
+                        errors.append(f"ERROR: FAMILY: US09: {fid}: Child {cid} born {fmt_date(cb)} after 9 months post death of father on {fmt_date(hd)}")
                     wd = individuals[wid]['death']
                     if wd and cb > wd:
-                        errors.append(f"ANOMALY: FAMILY: US09: {fid}: Child {cid} born {fmt_date(cb)} after death of mother on {fmt_date(wd)}")
+                        errors.append(f"ERROR: FAMILY: US09: {fid}: Child {cid} born {fmt_date(cb)} after death of mother on {fmt_date(wd)}")
 
         # US12: Parents not too old (jt)
         for cid in f['children']:
@@ -273,13 +273,13 @@ def run_user_stories(individuals, families):
                         if hb:
                             father_age = calculate_age(hb, cb)
                             if isinstance(father_age, int) and father_age >= 80:
-                                errors.append(f"ANOMALY: FAMILY: US12: {fid}: Father ({hid}) age {father_age} at birth of child {cid} on {fmt_date(cb)} is not less than 80 years older")
+                                errors.append(f"ERROR: FAMILY: US12: {fid}: Father ({hid}) age {father_age} at birth of child {cid} on {fmt_date(cb)} is not less than 80 years older")
                     if wid in individuals:
                         wb = individuals[wid]['birthday']
                         if wb:
                             mother_age = calculate_age(wb, cb)
                             if isinstance(mother_age, int) and mother_age >= 60:
-                                errors.append(f"ANOMALY: FAMILY: US12: {wid}: Mother ({wid}) age {mother_age} at birth of child {cid} on {fmt_date(cb)} is not less than 60 years older")
+                                errors.append(f"ERROR: FAMILY: US12: {wid}: Mother ({wid}) age {mother_age} at birth of child {cid} on {fmt_date(cb)} is not less than 60 years older")
 
         # US13: Siblings spacing
         siblings_birth = [
@@ -291,7 +291,7 @@ def run_user_stories(individuals, families):
             earlier, later = (cb1, cb2) if cb1 <= cb2 else (cb2, cb1)
             days_apart = (later - earlier).days
             if days_apart >= 2 and later < earlier + relativedelta(months=8):
-                errors.append(f"ANOMALY: FAMILY: US13: {fid}: Siblings {cid1} ({fmt_date(cb1)}) and {cid2} ({fmt_date(cb2)}) born {days_apart} days apart - not twins (<2 days) and less than 8 months apart")
+                errors.append(f"ERROR: FAMILY: US13: {fid}: Siblings {cid1} ({fmt_date(cb1)}) and {cid2} ({fmt_date(cb2)}) born {days_apart} days apart - not twins (<2 days) and less than 8 months apart")
     
     for e in errors:
         print(e)
