@@ -262,6 +262,23 @@ def run_user_stories(individuals, families):
                     if wd and cb > wd:
                         errors.append(f"ANOMALY: FAMILY: US09: {fid}: Child {cid} born {fmt_date(cb)} after death of mother on {fmt_date(wd)}")
 
+        # US12: Parents not too old (jt)
+        for cid in f['children']:
+            if cid in individuals:
+                cb = individuals[cid]['birthday']
+                if cb:
+                    if hid in individuals:
+                        hb = individuals[hid]['birthday']
+                        if hb:
+                            father_age = calculate_age(hb, cb)
+                            if isinstance(father_age, int) and father_age >= 80:
+                                errors.append(f"ANOMALY: FAMILY: US12: {fid}: Father ({hid}) age {father_age} at birth of child {cid} on {fmt_date(cb)} is not less than 80 years older")
+                    if wid in individuals:
+                        wb = individuals[wid]['birthday']
+                        if wb:
+                            mother_age = calculate_age(wb, cb)
+                            if isinstance(mother_age, int) and mother_age >= 60:
+                                errors.append(f"ANOMALY: FAMILY: US12: {wid}: Mother ({wid}) age {mother_age} at birth of child {cid} on {fmt_date(cb)} is not less than 60 years older")
     for e in errors:
         print(e)
 
