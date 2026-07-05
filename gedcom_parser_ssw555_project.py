@@ -1,4 +1,5 @@
 import sys
+import itertools
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 from prettytable import PrettyTable
@@ -279,6 +280,19 @@ def run_user_stories(individuals, families):
                             mother_age = calculate_age(wb, cb)
                             if isinstance(mother_age, int) and mother_age >= 60:
                                 errors.append(f"ANOMALY: FAMILY: US12: {wid}: Mother ({wid}) age {mother_age} at birth of child {cid} on {fmt_date(cb)} is not less than 60 years older")
+
+        # US13: Siblings spacing
+        siblings_birth = [
+            (cid, individuals[cid]['birthday'])
+            for cid in f['children']
+            if cid in individuals and individuals[cid]['birthday']
+        ]
+        for (cid1, cb1), (cid2, cb2) in itertools.combinations(siblings_birth, 2):
+            earlier, later = (cb1, cb2) if cb1 <= cb2 else (cb2, cb1)
+            days_apart = (later - earlier).days
+            if days_apart >= 2 and later < earlier + relativedelta(months=8):
+                errors.append(f"ANOMALY: FAMILY: US13: {fid}: Siblings {cid1} ({fmt_date(cb1)}) and {cid2} ({fmt_date(cb2)}) born {days_apart} days apart - not twins (<2 days) and less than 8 months apart")
+    
     for e in errors:
         print(e)
 
