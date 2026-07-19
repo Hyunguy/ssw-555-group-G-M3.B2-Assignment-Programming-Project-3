@@ -325,7 +325,7 @@ def check_us12(families, individuals):
                     errors.append(f"ERROR: FAMILY: US12: {wid}: Mother ({wid}) age {mother_age} at birth of child {cid} on {fmt_date(cb)} is not less than 60 years older")
     return errors
 
-
+# US13: Siblings spacing (jt)
 def check_us13(families, individuals):
     errors = []
     for fid, f in families.items():
@@ -341,6 +341,24 @@ def check_us13(families, individuals):
                 errors.append(f"ERROR: FAMILY: US13: {fid}: Siblings {cid1} ({fmt_date(cb1)}) and {cid2} ({fmt_date(cb2)}) born {days_apart} days apart - not twins (<2 days) and less than 8 months apart")
     return errors
 
+# US18: Siblings should not marry (jt)
+# US21: Husband -> male, wife -> female (jt)
+def check_us18_us21(families, individuals):
+    errors = []
+    for fid, f in families.items():
+        hid, wid = f['husband_id'], f['wife_id']
+        if hid not in individuals or wid not in individuals:
+            continue
+        # US21
+        if individuals[hid]['gender'] != 'M':
+            errors.append(f"ERROR: FAMILY: US21: {fid}: Husband {hid} has gender '{individuals[hid]['gender']}', expected 'M'")
+        if individuals[wid]['gender'] != 'F':
+            errors.append(f"ERROR: FAMILY: US21: {fid}: Wife {wid} has gender '{individuals[wid]['gender']}', expected 'F'")
+        # US18
+        shared_parents = individuals[hid]['child'] & individuals[wid]['child']
+        if shared_parents:
+            errors.append(f"ERROR: FAMILY: US18: {fid}: Husband {hid} and wife {wid} are siblings (share parent family {sorted(shared_parents)}) but are married to each other")
+    return errors
 
 def run_user_stories(individuals, families):
     today = date.today()
@@ -353,12 +371,13 @@ def run_user_stories(individuals, families):
     errors += check_us08_us09(families, individuals)
     errors += check_us12(families, individuals)
     errors += check_us13(families, individuals)
+    errors += check_us18_us21(families, individuals)
     return errors
 
 
 def main():
     if len(sys.argv) != 2:
-        print("Usage: python gedcom_parser.py <gedcom_file>")
+        print("Usage: python gedcom_parser_refactored.py <gedcom_file>")
         sys.exit(1)
 
     filename = sys.argv[1]
