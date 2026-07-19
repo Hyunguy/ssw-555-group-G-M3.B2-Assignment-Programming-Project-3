@@ -341,6 +341,46 @@ def check_us13(families, individuals):
                 errors.append(f"ERROR: FAMILY: US13: {fid}: Siblings {cid1} ({fmt_date(cb1)}) and {cid2} ({fmt_date(cb2)}) born {days_apart} days apart - not twins (<2 days) and less than 8 months apart")
     return errors
 
+# US16: Male last names in family should match
+def check_us16(families, individuals):
+    errors = []
+    for fid, f in families.items():
+        surnames = []
+        surnames.append(individuals[f['husband_id']]['name'].split(" ")[1])
+        for cid in f['children']:
+            if individuals[cid]['gender'] == 'M':
+                surnames.append(individuals[cid]['name'].split(" ")[1])
+        if len(set(surnames)) != 1:
+            errors.append(f"ERROR: FAMILY: US16: {fid}: Last names do not match for all male family members. ({surnames})")
+    return errors
+
+# US17: Parents should not marry any descendants
+def check_us17(families, individuals):
+    def get_descendants(id):
+        descendants = set()
+        seen = set()
+        search_families = set(individuals[id]['spouse'])
+        while len(search_families) != 0:
+            fid = search_families.pop()
+            if fid not in seen:
+                seen.add(fid)
+                for cid in families[fid]['children']:
+                    if cid not in descendants:
+                        descendants.add(cid)
+                        search_families = search_families.union(individuals[cid]['spouse'])
+        return descendants
+    errors = []
+    for fid, f in families.items():
+        hid = f['husband_id']
+        for id in get_descendants(hid):
+            if fid in individuals[id]['spouse']:
+                errors.append(f"ERROR: FAMILY: US17: {fid}: Ancestor {hid} cannot marry descendant {id}.")
+        wid = f['wife_id']
+        for id in get_descendants(wid):
+            if fid in individuals[id]['spouse']:
+                errors.append(f"ERROR: FAMILY: US17: {fid}: Ancestor {wid} cannot marry descendant {id}.")
+    return errors
+
 # US18: Siblings should not marry (jt)
 # US21: Husband -> male, wife -> female (jt)
 def check_us18_us21(families, individuals):
@@ -371,6 +411,8 @@ def run_user_stories(individuals, families):
     errors += check_us08_us09(families, individuals)
     errors += check_us12(families, individuals)
     errors += check_us13(families, individuals)
+    errors += check_us16(families, individuals)
+    errors += check_us17(families, individuals)
     errors += check_us18_us21(families, individuals)
     return errors
 
